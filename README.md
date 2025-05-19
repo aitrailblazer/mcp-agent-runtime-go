@@ -9,6 +9,9 @@ This SDK helps you build systems that:
 * Route tasks based on trust, capability, or intent
 * Manage prompt formatting and lifecycle control
 
+
+📖 [Read the full article on LinkedIn →](https://www.linkedin.com/pulse/mcp-go-building-agentic-runtime-mcp-agent-runtime-go-vassilev-uf6xc/)
+
 ---
 
 ## 🧠 Why this exists
