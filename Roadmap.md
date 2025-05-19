@@ -142,38 +142,44 @@ This gives you:
 
 ---
 
+Here is the expanded version of:
+
 ## 📌 Feature Justifications Summary (Ranked)
 
-This section elaborates on each feature in the roadmap, ranked by importance (10 = essential for minimal runtime, 5 = optional or advanced).
+This section explains each component of the `mcp-agent-runtime-go` project, with additional context and plain-language justification for **why it matters**, even to those unfamiliar with AI infrastructure.
 
-| Feature                  | Rank | Description                                                          | Justification                                                              |
-| ------------------------ | ---- | -------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| SessionLifecycle         | 10   | Controls session start and end with hooks for cleanup and tracing    | Required for lifecycle safety, observability, and consistent orchestration |
-| ModelRouter              | 10   | Core logic to dispatch prompts to the appropriate model              | Enables dynamic, multi-vendor orchestration and abstracted model selection |
-| AgentGenerator           | 10   | Constructs agents dynamically based on task intent or metadata       | Enables adaptive, composable runtime agents based on context               |
-| ModelSpec                | 10   | Declares capabilities and constraints of each model                  | Prevents runtime errors by ensuring compatibility before invocation        |
-| SessionMetadata          | 10   | Carries context like tenant, user, trace ID across components        | Ensures observability, access control, and structured execution flows      |
-| DescriptorHash()         | 10   | Seals agent + model + session config into reproducible bundle        | Critical for reproducibility, verification, and caching across executions  |
-| HaltingPolicy            | 9    | Stops agents that exceed time, depth, or loop limits                 | Prevents uncontrolled loops and ensures runtime safety                     |
-| ToolRegistry             | 9    | Declares tools that can be executed by an agent during a session     | Supports tool-augmented reasoning and modular plug-in behaviors            |
-| TrustTier                | 9    | Categorizes models by reliability, audit status, or internal policy  | Allows routing to safer models in high-stakes or regulated environments    |
-| AutoSealing              | 9    | Freezes agent state to prevent post-generation mutation              | Ensures deployed agents remain immutable, versioned, and trusted           |
-| AgentSynthesisPolicy     | 9    | Applies constraints to agent generation logic                        | Prevents unbounded or unsafe dynamic behavior by agents                    |
-| Agent YAML Tags          | 9    | Exports agent definition (tools, version, constraints)               | Enables interoperability, registry-based execution, and manual review      |
-| alignment\_policy        | 9    | Declares the moral, regulatory, or use-case bounds of agent behavior | Enables agents to opt out of unsafe or restricted actions                  |
-| CoordinatorOptions       | 8    | Central config for wiring lifecycle, tools, and routing              | Encapsulates runtime orchestration setup for reuse and testing             |
-| ModelRegistry            | 8    | Stores and serves model backends + specs                             | Enables dynamic routing, fallbacks, and service discovery                  |
-| GeneratedAgentDescriptor | 8    | Snapshot of a generated agent in structured format                   | Enables introspection, versioning, and reproducible evaluation             |
-| CapabilityScore          | 8    | Rates model performance for various task types                       | Helps `ModelRouter` pick best model for each job                           |
-| AgentDescriptor (YAML)   | 8    | Human-readable/exportable config format for static agents            | Useful in CICD, audit, registry, or pipeline execution                     |
-| TransportDescriptor      | 8    | Declares runtime protocol support (SSE, JSON, etc.)                  | Required for interop with various clients and transports                   |
-| ContextPropagator        | 7    | Injects auth, tenant, and trace info into context trees              | Makes every runtime call observably consistent and scoped                  |
-| CoordinatorContract      | 7    | Rules to block or accept runtime sessions                            | Useful for maintenance windows, safety overrides, or abuse prevention      |
-| RoutingPolicy            | 7    | Task → model selection logic layer                                   | Supports cost-based, trust-aware, or vendor-preferred routing strategies   |
-| PromptTemplate           | 7    | Wraps prompt strings in reusable templates                           | Reduces formatting bugs and promotes standardization across agents         |
-| GenerationContext        | 7    | Input context passed into `AgentGenerator`                           | Encapsulates user inputs, history, and system flags                        |
-| AgentIntrospector        | 7    | Runtime interface to inspect agent behavior                          | Aids debugging, visual analytics, and real-time introspection              |
-| ExtensionDescriptor      | 6    | Declares presence of optional runtime plugins                        | Supports modularity and runtime discoverability (e.g. memory, auth)        |
-| PromptDescriptorHash()   | 6    | Hash of rendered prompt                                              | Useful for deduplication, caching, and regression checks                   |
-| AlignmentFilter          | 5    | Optional safety layer that applies `alignment_policy` during routing | Helpful for conservative orgs or constrained deployments                   |
-| SpecHandler Interface    | 5    | Maps MCP spec calls to Go interface bindings                         | Useful for reflection-heavy integrations or testing mocks                  |
+Each feature is **ranked by importance** from 10 (critical) to 5 (optional but useful). This helps contributors and adopters prioritize their implementation roadmap.
+
+| Feature                      | Rank | Description                                                          | Justification                                                                                                                                                      |
+| ---------------------------- | ---- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **SessionLifecycle**         | 10   | Controls session start and end with hooks for cleanup and tracing    | Every model or agent execution must happen in a structured session. This module ensures safe startup, logging, and shutdown — like lifecycle hooks in web servers. |
+| **ModelRouter**              | 10   | Core logic to dispatch prompts to the appropriate model              | Not all tasks should go to the same model. This routes requests to GPT-4o, Claude, Gemini, etc., based on what they support or what’s trusted.                     |
+| **AgentGenerator**           | 10   | Constructs agents dynamically based on task intent or metadata       | Enables the system to build intelligent agents on the fly (e.g. a summarizer or question-answerer) without pre-defining every agent manually.                      |
+| **ModelSpec**                | 10   | Declares capabilities and constraints of each model                  | Defines model I/O limits, streaming support, etc. Prevents sending incompatible prompts to a model that doesn’t support certain formats.                           |
+| **SessionMetadata**          | 10   | Carries context like tenant, user, trace ID across components        | Like HTTP headers or trace IDs in APIs — lets systems observe and log what’s happening, and who initiated it. Needed for multi-user environments.                  |
+| **DescriptorHash()**         | 10   | Seals agent + model + session config into reproducible bundle        | Guarantees that a session is frozen and traceable — you know what ran, and you can re-run it identically later (important for trust and debugging).                |
+| **HaltingPolicy**            | 9    | Stops agents that exceed time, depth, or loop limits                 | Prevents infinite loops or overly expensive executions. Important when letting users or agents generate logic dynamically.                                         |
+| **ToolRegistry**             | 9    | Declares tools that can be executed by an agent during a session     | Makes tools like search, calculators, or RAG modules accessible in a clean and safe way. Promotes modularity.                                                      |
+| **TrustTier**                | 9    | Categorizes models by reliability, audit status, or internal policy  | Lets you rank GPT-4o as “production trusted” and Claude as “experimental” — useful in enterprise or compliance-sensitive environments.                             |
+| **AutoSealing**              | 9    | Freezes agent state to prevent post-generation mutation              | Like freezing a deployment config — ensures consistency when exporting or rerunning an agent elsewhere.                                                            |
+| **AgentSynthesisPolicy**     | 9    | Applies constraints to agent generation logic                        | Prevents generating agents that use unauthorized tools or unsafe behaviors. Good for platforms offering dynamic agent creation.                                    |
+| **Agent YAML Tags**          | 9    | Exports agent definition (tools, version, constraints)               | Makes agents transparent and portable. Enables manual inspection, versioning, and sharing between environments.                                                    |
+| **alignment\_policy**        | 9    | Declares the moral, regulatory, or use-case bounds of agent behavior | Important for specifying what agents should or shouldn’t do. Can prevent generation of unsafe or non-compliant behavior.                                           |
+| **CoordinatorOptions**       | 8    | Central config for wiring lifecycle, tools, and routing              | Simplifies setup: one place to connect session hooks, toolsets, and routing behaviors.                                                                             |
+| **ModelRegistry**            | 8    | Stores and serves model backends + specs                             | Keeps track of what models are available, their specs, and how to call them. Supports runtime discovery and selection.                                             |
+| **GeneratedAgentDescriptor** | 8    | Snapshot of a generated agent in structured format                   | Useful for reviewing what was created at runtime, exporting it, or replaying it later.                                                                             |
+| **CapabilityScore**          | 8    | Rates model performance for various task types                       | Helps the router decide which model is best for each prompt type (e.g. summarization = 9, translation = 6).                                                        |
+| **AgentDescriptor (YAML)**   | 8    | Human-readable/exportable config format for static agents            | Like a Dockerfile for agents — lets you version, share, and reuse agent configs.                                                                                   |
+| **TransportDescriptor**      | 8    | Declares runtime protocol support (SSE, JSON, etc.)                  | Helps clients know what formats or transports (e.g. WebSocket, HTTP) the runtime supports.                                                                         |
+| **ContextPropagator**        | 7    | Injects auth, tenant, and trace info into context trees              | Ensures all internal logic has access to the identity and origin of the request.                                                                                   |
+| **CoordinatorContract**      | 7    | Rules to block or accept runtime sessions                            | Lets you pause, redirect, or reject execution under certain conditions (e.g. quota exceeded, maintenance).                                                         |
+| **RoutingPolicy**            | 7    | Task → model selection logic layer                                   | Adds flexibility in deciding which model is used. Can encode business rules or fallbacks (e.g. low-latency model during load).                                     |
+| **PromptTemplate**           | 7    | Wraps prompt strings in reusable templates                           | Promotes consistency and standardization in prompt formatting across many agents or sessions.                                                                      |
+| **GenerationContext**        | 7    | Input context passed into `AgentGenerator`                           | Passes relevant information (e.g. user input, prior steps) into the agent generator — helps tailor behavior.                                                       |
+| **AgentIntrospector**        | 7    | Runtime interface to inspect agent behavior                          | Developers and admins can debug or monitor live agent behavior — supports transparency and trust.                                                                  |
+| **ExtensionDescriptor**      | 6    | Declares presence of optional runtime plugins                        | Labels whether runtime supports memory, RAG, or custom extensions. Helps with modular design.                                                                      |
+| **PromptDescriptorHash()**   | 6    | Hash of rendered prompt                                              | Useful for caching, regression testing, or checking if two sessions are “the same.”                                                                                |
+| **AlignmentFilter**          | 5    | Optional safety layer that applies `alignment_policy` during routing | A guardrail to prevent unsafe agents or prompts from being routed. Good for platforms with user-generated agents.                                                  |
+| **SpecHandler Interface**    | 5    | Maps MCP spec calls to Go interface bindings                         | Used in strict environments where functions must be explicitly bound to behavior — or for mocking/test harnesses.                                                  |
+
+
