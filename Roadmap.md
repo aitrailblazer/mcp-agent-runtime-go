@@ -116,7 +116,7 @@ Add flexibility, modularity, and developer control. Not required for initial MVP
 
 ---
 
-## ✅ MVP Recommendation
+## ✅ MVP Recommendation + Feature Justifications Summary
 
 Start with the following to build a minimal runtime that:
 
@@ -139,3 +139,41 @@ Start with the following to build a minimal runtime that:
 This gives you:
 
 * Prompt → optimized prompt → routed model → dynamic agent → safe execution → sealed outcome
+
+---
+
+## 📌 Feature Justifications Summary (Ranked)
+
+This section elaborates on each feature in the roadmap, ranked by importance (10 = essential for minimal runtime, 5 = optional or advanced).
+
+| Feature                  | Rank | Description                                                          | Justification                                                              |
+| ------------------------ | ---- | -------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| SessionLifecycle         | 10   | Controls session start and end with hooks for cleanup and tracing    | Required for lifecycle safety, observability, and consistent orchestration |
+| ModelRouter              | 10   | Core logic to dispatch prompts to the appropriate model              | Enables dynamic, multi-vendor orchestration and abstracted model selection |
+| AgentGenerator           | 10   | Constructs agents dynamically based on task intent or metadata       | Enables adaptive, composable runtime agents based on context               |
+| ModelSpec                | 10   | Declares capabilities and constraints of each model                  | Prevents runtime errors by ensuring compatibility before invocation        |
+| SessionMetadata          | 10   | Carries context like tenant, user, trace ID across components        | Ensures observability, access control, and structured execution flows      |
+| DescriptorHash()         | 10   | Seals agent + model + session config into reproducible bundle        | Critical for reproducibility, verification, and caching across executions  |
+| HaltingPolicy            | 9    | Stops agents that exceed time, depth, or loop limits                 | Prevents uncontrolled loops and ensures runtime safety                     |
+| ToolRegistry             | 9    | Declares tools that can be executed by an agent during a session     | Supports tool-augmented reasoning and modular plug-in behaviors            |
+| TrustTier                | 9    | Categorizes models by reliability, audit status, or internal policy  | Allows routing to safer models in high-stakes or regulated environments    |
+| AutoSealing              | 9    | Freezes agent state to prevent post-generation mutation              | Ensures deployed agents remain immutable, versioned, and trusted           |
+| AgentSynthesisPolicy     | 9    | Applies constraints to agent generation logic                        | Prevents unbounded or unsafe dynamic behavior by agents                    |
+| Agent YAML Tags          | 9    | Exports agent definition (tools, version, constraints)               | Enables interoperability, registry-based execution, and manual review      |
+| alignment\_policy        | 9    | Declares the moral, regulatory, or use-case bounds of agent behavior | Enables agents to opt out of unsafe or restricted actions                  |
+| CoordinatorOptions       | 8    | Central config for wiring lifecycle, tools, and routing              | Encapsulates runtime orchestration setup for reuse and testing             |
+| ModelRegistry            | 8    | Stores and serves model backends + specs                             | Enables dynamic routing, fallbacks, and service discovery                  |
+| GeneratedAgentDescriptor | 8    | Snapshot of a generated agent in structured format                   | Enables introspection, versioning, and reproducible evaluation             |
+| CapabilityScore          | 8    | Rates model performance for various task types                       | Helps `ModelRouter` pick best model for each job                           |
+| AgentDescriptor (YAML)   | 8    | Human-readable/exportable config format for static agents            | Useful in CICD, audit, registry, or pipeline execution                     |
+| TransportDescriptor      | 8    | Declares runtime protocol support (SSE, JSON, etc.)                  | Required for interop with various clients and transports                   |
+| ContextPropagator        | 7    | Injects auth, tenant, and trace info into context trees              | Makes every runtime call observably consistent and scoped                  |
+| CoordinatorContract      | 7    | Rules to block or accept runtime sessions                            | Useful for maintenance windows, safety overrides, or abuse prevention      |
+| RoutingPolicy            | 7    | Task → model selection logic layer                                   | Supports cost-based, trust-aware, or vendor-preferred routing strategies   |
+| PromptTemplate           | 7    | Wraps prompt strings in reusable templates                           | Reduces formatting bugs and promotes standardization across agents         |
+| GenerationContext        | 7    | Input context passed into `AgentGenerator`                           | Encapsulates user inputs, history, and system flags                        |
+| AgentIntrospector        | 7    | Runtime interface to inspect agent behavior                          | Aids debugging, visual analytics, and real-time introspection              |
+| ExtensionDescriptor      | 6    | Declares presence of optional runtime plugins                        | Supports modularity and runtime discoverability (e.g. memory, auth)        |
+| PromptDescriptorHash()   | 6    | Hash of rendered prompt                                              | Useful for deduplication, caching, and regression checks                   |
+| AlignmentFilter          | 5    | Optional safety layer that applies `alignment_policy` during routing | Helpful for conservative orgs or constrained deployments                   |
+| SpecHandler Interface    | 5    | Maps MCP spec calls to Go interface bindings                         | Useful for reflection-heavy integrations or testing mocks                  |
