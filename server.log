@@ -1,0 +1,3 @@
+2025/05/19 23:42:31 🚀 MCP Agent Runtime starting on port 8080
+2025/05/19 23:42:31 ❌ Server failed: listen tcp :8080: bind: address already in use
+exit status 1
